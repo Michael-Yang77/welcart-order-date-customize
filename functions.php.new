@@ -1,0 +1,1049 @@
+<?php
+/**
+ * Anne Shirley functions and definitions
+ *
+ * @link https://developer.wordpress.org/themes/basics/theme-functions/
+ *
+ * @package Anne_Shirley
+ */
+
+if ( ! function_exists( 'anne_shirley_setup' ) ) :
+	/**
+	 * Sets up theme defaults and registers support for various WordPress features.
+	 *
+	 * Note that this function is hooked into the after_setup_theme hook, which
+	 * runs before the init hook. The init hook is too late for some features, such
+	 * as indicating support for post thumbnails.
+	 */
+	function anne_shirley_setup() {
+		/*
+		 * Make theme available for translation.
+		 * Translations can be filed in the /languages/ directory.
+		 * If you're building a theme based on Anne Shirley, use a find and replace
+		 * to change 'anne_shirley' to the name of your theme in all the template files.
+		 */
+		load_theme_textdomain( 'anne_shirley', get_template_directory() . '/languages' );
+
+		// Add default posts and comments RSS feed links to head.
+		add_theme_support( 'automatic-feed-links' );
+
+		/*
+		 * Let WordPress manage the document title.
+		 * By adding theme support, we declare that this theme does not use a
+		 * hard-coded <title> tag in the document head, and expect WordPress to
+		 * provide it for us.
+		 */
+		add_theme_support( 'title-tag' );
+
+		/*
+		 * Enable support for Post Thumbnails on posts and pages.
+		 *
+		 * @link https://developer.wordpress.org/themes/functionality/featured-images-post-thumbnails/
+		 */
+		add_theme_support( 'post-thumbnails' );
+
+		// This theme uses wp_nav_menu() in one location.
+		register_nav_menus( array(
+			'menu-1' => esc_html__( 'Primary', 'anne_shirley' ),
+		) );
+
+		/*
+		 * Switch default core markup for search form, comment form, and comments
+		 * to output valid HTML5.
+		 */
+		add_theme_support( 'html5', array(
+			'search-form',
+			'comment-form',
+			'comment-list',
+			'gallery',
+			'caption',
+		) );
+
+		// Set up the WordPress core custom background feature.
+		add_theme_support( 'custom-background', apply_filters( 'anne_shirley_custom_background_args', array(
+			'default-color' => 'ffffff',
+			'default-image' => '',
+		) ) );
+
+		// Add theme support for selective refresh for widgets.
+		add_theme_support( 'customize-selective-refresh-widgets' );
+
+		/**
+		 * Add support for core custom logo.
+		 *
+		 * @link https://codex.wordpress.org/Theme_Logo
+		 */
+		add_theme_support( 'custom-logo', array(
+			'height'      => 250,
+			'width'       => 250,
+			'flex-width'  => true,
+			'flex-height' => true,
+		) );
+	}
+endif;
+add_action( 'after_setup_theme', 'anne_shirley_setup' );
+
+/**
+ * Set the content width in pixels, based on the theme's design and stylesheet.
+ *
+ * Priority 0 to make it available to lower priority callbacks.
+ *
+ * @global int $content_width
+ */
+function anne_shirley_content_width() {
+	// This variable is intended to be overruled from themes.
+	// Open WPCS issue: {@link https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/issues/1043}.
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+	$GLOBALS['content_width'] = apply_filters( 'anne_shirley_content_width', 640 );
+}
+add_action( 'after_setup_theme', 'anne_shirley_content_width', 0 );
+
+/**
+ * Register widget area.
+ *
+ * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
+ */
+function anne_shirley_widgets_init() {
+	register_sidebar( array(
+		'name'          => esc_html__( 'Sidebar', 'anne_shirley' ),
+		'id'            => 'sidebar-1',
+		'description'   => esc_html__( 'Add widgets here.', 'anne_shirley' ),
+		'before_widget' => '<section id="%1$s" class="widget %2$s">',
+		'after_widget'  => '</section>',
+		'before_title'  => '<h2 class="widget-title">',
+		'after_title'   => '</h2>',
+	) );
+}
+add_action( 'widgets_init', 'anne_shirley_widgets_init' );
+
+/**
+ * Enqueue scripts and styles.
+ */
+function anne_shirley_scripts() {
+	wp_enqueue_style( 'anne_shirley-style', get_stylesheet_uri() );
+
+	wp_enqueue_script( 'anne_shirley-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20151215', true );
+
+	wp_enqueue_script( 'anne_shirley-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20151215', true );
+
+	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
+		wp_enqueue_script( 'comment-reply' );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'anne_shirley_scripts' );
+
+/**
+ * Implement the Custom Header feature.
+ */
+require get_template_directory() . '/inc/custom-header.php';
+
+/**
+ * Custom template tags for this theme.
+ */
+require get_template_directory() . '/inc/template-tags.php';
+
+/**
+ * Functions which enhance the theme by hooking into WordPress.
+ */
+require get_template_directory() . '/inc/template-functions.php';
+
+/**
+ * Customizer additions.
+ */
+require get_template_directory() . '/inc/customizer.php';
+
+/**
+ * Load Jetpack compatibility file.
+ */
+if ( defined( 'JETPACK__VERSION' ) ) {
+	require get_template_directory() . '/inc/jetpack.php';
+}
+
+/* = original customize
+---------------------------------------------------- */
+
+// 管理者でないならば実行（クライアント向け機能）
+if ( !current_user_can( 'administrator' ) ) { //////////////////////////////////
+
+	// 管理画面の表示権限
+	function remove_dashboard_widget() {
+		remove_meta_box( 'dashboard_right_now', 'dashboard', 'normal' ); // 概要
+		remove_meta_box( 'dashboard_activity', 'dashboard', 'normal' ); // アクティビティ
+		remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' ); // クイックドラフト
+		remove_meta_box( 'dashboard_primary', 'dashboard', 'side' ); // WordPressニュース
+		remove_meta_box('cms_tpv_dashboard_widget_page', 'dashboard', 'normal' );
+	}
+
+	add_action( 'wp_dashboard_setup', 'remove_dashboard_widget' );
+
+	// メニューの非表示
+	function remove_menus() {
+		global $menu;
+		global $submenu;
+		unset( $menu[ 2 ] ); // ダッシュボード
+		unset( $menu[ 4 ] ); // メニューの線1
+		//unset($menu[5]);  // 投稿
+		unset($menu[10]); // メディア
+		unset( $menu[ 15 ] ); // リンク
+		unset( $menu[ 20 ] ); // ページ
+		unset( $menu[ 25 ] ); // コメント
+		unset( $menu[ 59 ] ); // メニューの線2
+		unset( $menu[ 60 ] ); // テーマ
+		unset($menu[65]); // プラグイン
+		unset( $menu[ 70 ] ); // プロフィール
+		unset( $menu[ 75 ] ); // ツール
+		unset($menu[80]); // 設定
+		//unset( $menu[ 90 ] ); // メニューの線3
+		
+		$user = wp_get_current_user();
+
+	}
+	add_action( 'admin_menu', 'remove_menus' );
+	
+	function remove_acf_menu(){
+    remove_menu_page('cpt_main_menu');
+  	remove_menu_page('ps-taxonomy-expander.php');
+  	remove_menu_page('edit.php?post_type=acf');
+		remove_menu_page('wpcf7');
+		remove_menu_page('cptui_main_menu'); // 更新
+
+	//	remove_menu_page('edit.php?post_type=slide');
+		remove_menu_page('original_order_system_detail');
+		remove_menu_page('original_order_system_print');
+
+		//remove_menu_page('admin.php?page=usces_initial');
+		//remove_menu_page( 'usces_initial' );
+
+  }
+  add_action( 'admin_menu', 'remove_acf_menu', 999 );
+	
+	// WPバージョンアップ通知を非表示に
+	function update_nag_hide() {
+		remove_action( 'admin_notices', 'update_nag', 3 );
+	}
+	add_action( 'admin_init', 'update_nag_hide' );
+	
+	// 投稿作成画面のカテゴリ新規追加を非表示
+	/*
+	function hide_category_tabs_adder() {
+	  global $pagenow;
+	  global $post_type;
+	  if ( is_admin() && ($pagenow=='post-new.php' || $pagenow=='post.php') ) {
+		echo '<style type="text/css">
+		#category-tabs, #category-adder {display:none;}
+		#xxx-tabs, #xxx-adder {display:none;}
+
+		.categorydiv .tabs-panel {padding: 0 !important; background: none; border: none !important;}
+		</style>';
+	  }
+	}
+	add_action( 'admin_head', 'hide_category_tabs_adder' );
+	*/
+	
+	//管理バーの項目を削除
+	function remove_bar_menus( $wp_admin_bar ) {
+		$wp_admin_bar->remove_menu( 'wp-logo' );      // ロゴ
+		//$wp_admin_bar->remove_menu( 'site-name' );    // サイト名
+		//$wp_admin_bar->remove_menu( 'view-site' );    // サイト名 -> サイトを表示
+		//$wp_admin_bar->remove_menu( 'dashboard' );    // サイト名 -> ダッシュボード (公開側)
+		$wp_admin_bar->remove_menu( 'themes' );       // サイト名 -> テーマ (公開側)
+		$wp_admin_bar->remove_menu( 'customize' );    // サイト名 -> カスタマイズ (公開側)
+		$wp_admin_bar->remove_menu( 'comments' );     // コメント
+		$wp_admin_bar->remove_menu( 'updates' );      // 更新
+		//$wp_admin_bar->remove_menu( 'view' );         // 投稿を表示
+		$wp_admin_bar->remove_menu( 'new-content' );  // 新規
+		//$wp_admin_bar->remove_menu( 'new-post' );     // 新規 -> 投稿
+		$wp_admin_bar->remove_menu( 'new-media' );    // 新規 -> メディア
+		$wp_admin_bar->remove_menu( 'new-link' );     // 新規 -> リンク
+		$wp_admin_bar->remove_menu( 'new-page' );     // 新規 -> 固定ページ
+		$wp_admin_bar->remove_menu( 'new-user' );     // 新規 -> ユーザー
+		//$wp_admin_bar->remove_menu( 'my-account' );   // マイアカウント
+		$wp_admin_bar->remove_menu( 'user-info' );    // マイアカウント -> プロフィール
+		$wp_admin_bar->remove_menu( 'edit-profile' ); // マイアカウント -> プロフィール編集
+		//$wp_admin_bar->remove_menu( 'logout' );       // マイアカウント -> ログアウト
+		//$wp_admin_bar->remove_menu( 'search' );       // 検索 (公開側)
+		
+	}
+	add_action('admin_bar_menu', 'remove_bar_menus', 201);
+	
+	// 管理画面TOPにオリジナルウィジェットを追加
+	add_action('wp_dashboard_setup', 'my_custom_dashboard_widgets');
+	function my_custom_dashboard_widgets() {
+	 global $wp_meta_boxes;
+	 wp_add_dashboard_widget('custom_help_widget', 'メニュー', 'dashboard_text');
+	}
+	function dashboard_text() {
+	 $html .= '<h3>●ホームページ管理</h3>';		
+	 $html .= '<p>';
+	 $html .= '<a href="./edit.php?post_type=post">→ お知らせ一覧</a>　';
+	 $html .= '<a href="./edit.php?post_type=cakes">→ ケーキメニュー一覧</a>　';
+	 //$html .= '<a href="./upload.php">→ メディア</a>　';
+	 //$html .= '<a href="./edit.php?post_type=page">→ ページ一覧</a>　';
+	 $html .= '</p>';
+	 $html .= '<hr>';
+	 $html .= '<h3>●通販＆会員管理</h3>';
+	 $html .= '<p>';
+	 $html .= '<a href="./admin.php?page=usces_orderlist">→ 受注一覧</a>　';
+	 $html .= '<a href="./admin.php?page=usces_itemedit">→ 通販商品一覧</a>　';
+	 $html .= '<a href="./admin.php?page=usces_memberlist">→ 登録会員一覧</a>　';	 
+	 $html .= '</p>';
+	 echo $html;
+	}
+
+	// プラグインのエラーメッセージを表示しない
+	function my_admin_style() {
+		echo '<style>
+		.message.error{ display:none; }
+		</style>'.PHP_EOL;
+	}
+	add_action('admin_print_styles', 'my_admin_style');
+	
+
+} // end //////////////////////////////////
+
+// 投稿 -> ブログに変更
+function change_post_menu_label() {
+  global $menu;
+  global $submenu;
+  $menu[5][0] = 'お知らせ';
+  $submenu['edit.php'][5][0] = 'お知らせ一覧';
+  $submenu['edit.php'][10][0] = '新しいお知らせ記事';
+	$submenu['edit.php'][16][0] = 'タグ';
+	
+	$menu[20][0] = 'ページ';
+	$submenu["edit.php?post_type=page"][5][0] = 'ページ一覧';
+}
+
+function change_post_object_label() {
+  global $wp_post_types;
+  $labels = &$wp_post_types['post']->labels;
+  $labels->name = 'お知らせ';
+  $labels->singular_name = 'お知らせ';
+  $labels->add_new = _x('追加', 'お知らせ記事');
+  $labels->add_new_item = 'お知らせ記事の新規追加';
+  $labels->edit_item = 'お知らせ記事の編集';
+  $labels->new_item = '新規お知らせ記事';
+  $labels->view_item = 'お知らせ記事を表示';
+  $labels->search_items = 'お知らせ記事を検索';
+  $labels->not_found = '記事が見つかりませんでした';
+  $labels->not_found_in_trash = 'ゴミ箱に記事は見つかりませんでした';
+}
+add_action( 'init', 'change_post_object_label' );
+add_action( 'admin_menu', 'change_post_menu_label' );
+
+function change_page_object_label() {
+  global $wp_post_types;
+  $labels = &$wp_post_types['page']->labels;
+  $labels->name = 'ページ';
+  $labels->singular_name = 'ページ';
+  $labels->add_new = _x('追加', 'ページ');
+  $labels->add_new_item = 'ページの新規追加';
+  $labels->edit_item = 'ページの編集';
+  $labels->new_item = '新規ページ';
+  $labels->view_item = 'ページを表示';
+  $labels->search_items = 'ページを検索';
+  $labels->not_found = 'ページが見つかりませんでした';
+  $labels->not_found_in_trash = 'ゴミ箱にページは見つかりませんでした';
+}
+add_action( 'init', 'change_page_object_label' );
+
+// タイトルタグの自動出力
+add_theme_support( 'title-tag' );
+
+// オートフォーマット関連の無効化
+add_action('init', function() {
+	remove_filter('the_title', 'wptexturize');
+	remove_filter('the_content', 'wptexturize');
+	remove_filter('the_excerpt', 'wptexturize');
+	remove_filter('the_title', 'wpautop');
+	remove_filter('the_content', 'wpautop');
+	remove_filter('the_excerpt', 'wpautop');
+	remove_filter('the_editor_content', 'wp_richedit_pre');
+});
+
+// オートフォーマット関連の無効化 TinyMCE
+add_filter('tiny_mce_before_init', function($init) {
+	$init['wpautop'] = false;
+	$init['apply_source_formatting'] = true;
+	return $init;
+});
+
+// 固定ページの親要素をスラッグで判定
+function is_parent_slug() {
+  global $post;
+  if ($post->post_parent) {
+    $post_data = get_post($post->post_parent);
+    return $post_data->post_name;
+  }
+}
+
+// 投稿のURLを/blog/とする
+function post_has_archive( $args, $post_type ) {
+
+	if ( 'post' == $post_type ) {
+		$args['rewrite'] = true;
+		$args['has_archive'] = 'information'; //任意のスラッグ名
+	}
+	return $args;
+
+}
+add_filter( 'register_post_type_args', 'post_has_archive', 10, 2 );
+
+//カテゴリーの選択を1つに制限
+add_action( 'admin_print_footer_scripts', 'limit_category_select' );
+function limit_category_select() {
+	?>
+	<script type="text/javascript">
+		jQuery(function($) {
+			// 投稿画面のカテゴリー選択を制限
+			var categorydiv = $( '#categorydiv input[type=checkbox]' );
+			categorydiv.click( function() {
+				$(this).parents( '#categorydiv' ).find( 'input[type=checkbox]' ).attr('checked', false);
+				$(this).attr( 'checked', true );
+			});
+			// クイック編集のカテゴリー選択を制限
+			var inline_edit_col_center = $( '.inline-edit-col-center input[type=checkbox]' );
+			inline_edit_col_center.click( function() {
+				$(this).parents( '.inline-edit-col-center' ).find( 'input[type=checkbox]' ).attr( 'checked', false );
+				$(this).attr( 'checked', true );
+			});
+			
+			//$( '#categorydiv #category-pop > ul > li:first-child, #categorydiv #category-all > ul > li:first-child, .inline-edit-col-center > ul.category-checklist > li:first-child' ).before( '<p style="padding-top:5px;">カテゴリーは1つしか選択できません</p>' );
+
+		});
+	</script>
+	<?php
+}
+
+// 投稿画面からカテゴリー&タグを非表示
+function hide_taxonomy_from_menu() {
+	global $wp_taxonomies;
+
+	// カテゴリーの非表示
+	/*
+	if ( !empty( $wp_taxonomies['category']->object_type ) ) {
+			foreach ( $wp_taxonomies['category']->object_type as $i => $object_type ) {
+					if ( $object_type == 'post' ) {
+							unset( $wp_taxonomies['category']->object_type[$i] );
+					}
+			}
+	}*/
+
+	// タグの非表示
+	if ( !empty( $wp_taxonomies['post_tag']->object_type ) ) {
+			foreach ( $wp_taxonomies['post_tag']->object_type as $i => $object_type ) {
+					if ( $object_type == 'post' ) {
+							unset( $wp_taxonomies['post_tag']->object_type[$i] );
+					}
+			}
+	}
+	return true;
+}
+add_action( 'init', 'hide_taxonomy_from_menu' );
+
+// 記事に含まれる最初の画像を取得
+function catch_that_image() {
+	global $post, $posts;
+	$first_img = '';
+	ob_start();
+	ob_end_clean();
+	$output = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $post->post_content, $matches);
+	$first_img = $matches [1] [0];
+
+	if(empty($first_img)){
+			// 記事内で画像がなかったときのためのデフォルト画像を指定
+			//$first_img = "/manager/assets/img/dumy_g.jpg";
+			$first_img = "/manager/assets/img/noimage.png";
+	}
+	return $first_img;
+}
+
+// pagerにclassを付与
+add_filter( 'previous_post_link', 'add_prev_post_link_class' );
+function add_prev_post_link_class($output) {
+  return str_replace('<a href=', '<a class="pager_btn prev" href=', $output);
+}
+add_filter( 'next_post_link', 'add_next_post_link_class' );
+function add_next_post_link_class($output) {
+  return str_replace('<a href=', '<a class="pager_btn next" href=', $output);
+}
+
+// 新しい記事の場合はtrueを返す(指定なければ14日以内)
+function is_new_post($entry, $days=14){
+	$ret = false;
+
+	$today = date_i18n('U');
+	$entry = get_the_time('U');
+	$kiji = date('U', ($today - $entry)) / 86400;
+
+	if ($days > $kiji){
+		$ret = true;
+	}
+
+	return $ret;
+}
+
+// 商品画像がセットされているか？
+function usces_the_itemImage2($number = 0, $width = 60, $height = 60, $post = '', $out = '', $media = 'item'){
+
+	$thumbImg = usces_the_itemImage($number, $width, $height, $post, 'return', $media);
+
+	preg_match_all( '/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $thumbImg, $matches );
+
+	$get_thumbImg = $matches[1][0];
+	$get_thumbImg_basename = basename($get_thumbImg);
+
+	if( $get_thumbImg_basename === 'default.png' ) {
+		$html = sprintf('<img src="%s">', esc_url( home_url( '/' )).'assets/img/default.png');
+    if($out == 'return'){
+			return $html;
+		}else{
+			echo $html;
+		}
+	} 
+	else {
+		usces_the_itemImage($number, $width, $height, $post, $out, $media);
+  }
+
+}
+
+// 子カテゴリも親カテゴリのテンプレートを踏襲する（item / information）
+add_filter( 'category_template', 'parent_category_template' );
+function parent_category_template( $template ) {
+    $category = get_queried_object();
+    if ( $category->parent != 0 &&
+        ( $template == "" || strpos( $template, "category-item.php" ) !== false ) ) {
+        $templates = array();
+        while ( $category->parent ) {
+            $category = get_category( $category->parent );
+            if ( !isset( $category->slug ) ) break;
+            $templates[] = "category-{$category->slug}.php";
+            $templates[] = "category-{$category->term_id}.php";
+        }
+        $templates[] = "category-item.php";
+        $template = locate_template( $templates );
+		}
+		elseif ( $category->parent != 0 &&
+        ( $template == "" || strpos( $template, "category-information.php" ) !== false ) ) {
+        $templates = array();
+        while ( $category->parent ) {
+            $category = get_category( $category->parent );
+            if ( !isset( $category->slug ) ) break;
+            $templates[] = "category-{$category->slug}.php";
+            $templates[] = "category-{$category->term_id}.php";
+        }
+        $templates[] = "category-information.php";
+        $template = locate_template( $templates );
+		}
+		//echo $category->slug;
+    return $template;
+}
+
+// EC商品の並び替え（商品コードで並び替え→登録新しい順&&商品名昇順）
+function getcatorder( $query ) {
+	if ( is_admin() || ! $query->is_main_query() )
+		return;
+
+	if ( $query->is_category() ) {
+		//$query->set( 'posts_per_page', '-1' );
+		//$query->set( 'orderby', 'title' );
+
+		// まるぴーは名前昇順
+		if ( $query->is_category('marup') || $query->is_category('marup2')) {
+
+			$query->set( 'orderby', array(
+					'title'=>'ASC',
+					'date'=>'DESC',
+				) 
+			);
+		}
+		else{
+			$query->set( 'orderby', array(
+					'date'=>'DESC',
+					'title'=>'ASC',
+				) 
+			);
+		}
+
+		
+		//$query->set( 'meta_key', 'item_order' );
+		//$query->set( 'order', 'ASC' );
+
+		return;
+	}
+}
+add_action( 'pre_get_posts', 'getcatorder' );
+
+
+/*********************
+OGPタグ/Twitterカード設定を出力
+*********************/
+function my_meta_ogp() {
+  if( is_front_page() || is_home() || is_singular() ){
+    global $post;
+    $ogp_title = '';
+    $ogp_descr = '';
+    $ogp_url = '';
+    $ogp_img = '';
+    $insert = '';
+
+    if( is_singular() ) { //記事＆固定ページ
+       setup_postdata($post);
+       $ogp_title = $post->post_title;
+       $ogp_descr = mb_substr(get_the_excerpt(), 0, 100);
+       $ogp_url = get_permalink();
+       wp_reset_postdata();
+    } elseif ( is_front_page() || is_home() ) { //トップページ
+       $ogp_title = get_bloginfo('name');
+       $ogp_descr = get_bloginfo('description');
+       $ogp_url = home_url();
+    }
+
+    //og:type
+    $ogp_type = ( is_front_page() || is_home() ) ? 'website' : 'article';
+
+    //og:image
+    if ( is_singular() && has_post_thumbnail() ) {
+       $ps_thumb = wp_get_attachment_image_src( get_post_thumbnail_id(), 'full');
+       $ogp_img = $ps_thumb[0];
+    } else {
+     $ogp_img = home_url().'/assets/img/ogp.jpg';
+    }
+
+    //出力するOGPタグをまとめる
+    $insert .= '<meta property="og:title" content="'.esc_attr($ogp_title).'" />' . "\n";
+    $insert .= '<meta property="og:description" content="'.esc_attr($ogp_descr).'" />' . "\n";
+    $insert .= '<meta property="og:type" content="'.$ogp_type.'" />' . "\n";
+    $insert .= '<meta property="og:url" content="'.esc_url($ogp_url).'" />' . "\n";
+    $insert .= '<meta property="og:image" content="'.esc_url($ogp_img).'" />' . "\n";
+    $insert .= '<meta property="og:site_name" content="'.esc_attr(get_bloginfo('name')).'" />' . "\n";
+    $insert .= '<meta name="twitter:card" content="summary_large_image" />' . "\n";
+    $insert .= '<meta name="twitter:site" content="'.esc_attr($ogp_title).'" />' . "\n";
+    $insert .= '<meta property="og:locale" content="ja_JP" />' . "\n";
+
+    //facebookのapp_id（設定する場合）
+    //$insert .= '<meta property="fb:app_id" content="ここにappIDを入力">' . "\n";
+    //app_idを設定しない場合ここまで消す
+
+    echo $insert;
+  }
+} //END my_meta_ogp
+
+add_action('wp_head','my_meta_ogp');//headにOGPを出力
+
+function my_admin_script() {
+	?>
+  <script>
+	jQuery(function($) {
+		$(".wp-menu-name").each(function(){
+				if($(this).text()==='Welcart Shop'){
+					$(this).text('ショップ基本機能');
+				}
+				else if($(this).text()==='Welcart Management'){
+					$(this).text('通販＆会員機能');
+				}
+			});
+		});
+  </script>
+	<?php echo PHP_EOL;
+}
+add_action('admin_print_footer_scripts', 'my_admin_script');
+
+
+// 管理者ならば実行（一時的）
+//if ( current_user_can( 'administrator' ) ) { //////////////////////////////////
+
+// 注文管理システム
+function original_order_system_page(){
+	add_menu_page('受注カレンダー', '受注カレンダー', 1, 'original_order_system_page', 'original_order_system_menu');
+}
+add_action('admin_menu', 'original_order_system_page');
+function original_order_system_menu() {include 'original_order_manager.php';}
+
+// 注文管理システム
+function original_order_system_detail(){
+	add_menu_page('注文詳細', '注文詳細', 1, 'original_order_system_detail', 'original_order_system_detail_menu');
+	
+}
+add_action('admin_menu', 'original_order_system_detail');
+function original_order_system_detail_menu() {include 'original_order_detail.php';}
+
+// 注文印刷システム
+function original_order_system_print(){
+	add_menu_page('注文印刷', '注文印刷', 1, 'original_order_system_print', 'original_order_system_print_menu');
+	
+}
+add_action('admin_menu', 'original_order_system_print');
+function original_order_system_print_menu() {include 'original_order_print.php';}
+
+
+
+
+
+//} // endif //////////////////////////////////////////////////////////////////////
+
+
+// 独自ページの追加
+function original_page() {
+	add_menu_page('LINEアプリ', 'LINEアプリ', 1, 'original_page', 'original_menu');
+}
+add_action('admin_menu', 'original_page');
+function original_menu() {include 'admin_lineapp.php';}
+
+// カート：配送方法ページ「配送希望日」周辺のカスタマイズ
+add_filter( 'the_delivery_date', 'my_filter_the_delivery_date' );
+function my_filter_the_delivery_date( $html ) {
+		//処理
+		if(!isset($_SESSION['usces_cart'])) return array();
+		
+		$rows = array();
+		
+		$i = 0;
+		foreach($_SESSION['usces_cart'] as $serial => $qua) { 
+			$array = key_unserialize($serial);
+
+			$rows[$i] = $array;
+			
+			$i++;
+		}
+
+		$item_category_in = ''; //このカテゴリーが含まれるフラグ
+
+		if($cart = $rows){
+			//echo "<!-- ";
+			//var_dump($cart);
+			//echo " -->";
+
+			foreach($cart as $key => $val){
+
+				$item_id = $val["post_id"];
+
+
+				
+				$category = get_the_category($item_id);
+				$category_slug = $category[0]->slug;
+
+				//echo "<!-- ";
+				//var_dump($category_slug);
+				//echo " -->";
+
+				// カートの商品にバースデーケーキが含まれるなら
+				if($category_slug==='cakes'){
+
+					$item_category_in = 'cakes';
+
+				}
+				// カートの商品にまるぴーが含まれるなら
+				elseif($category_slug==='marup' || $category_slug==='marup2'){
+
+					// 商品コード(marupMMDD)から受取日（YY-MM-DD）を取得
+					$item_sku_code = $val["sku"];
+					$item_sku_md = str_replace('marup', '', $item_sku_code);
+					$item_sku_date = date('Y-m-d', strtotime(date('Y').$item_sku_md));
+
+					$item_category_in = 'marup';
+				}
+				// カートの商品にクリスマスケーキが含まれるなら
+				elseif($category_slug==='xmas' || $category_slug==='xmas2'){
+
+					$item_sku_code = $val["sku"];
+					$item_category_in = 'xmas';
+				}
+
+			}
+
+		}
+		
+		//echo "<!-- catein: ";
+		//echo $item_category_in;
+		//echo " -->";
+
+		// 返り値のhtmlに追記
+		// カートの商品にバースデーケーキが含まれるなら
+		if($item_category_in === 'cakes'){
+			
+			$html .= "<script> $(window).on('load', function() { ";
+
+			// 発送先
+			$html .= "$('#delivery_flag2').prop('disabled', true);";
+			$html .= "$('label[for=delivery_flag1]').html('店舗受取');";
+
+			// 発送希望日
+			$html .= "$('#delivery_date_select').children('option[value=指定しない]').remove(); ";
+
+			$html .= "$('#delivery_date_select').parent('td').append('<br>※バースデーケーキ（期間限定ケーキ含む）の場合は受取希望日を必ず指定してください'); ";
+			$html .= "}); </script>";
+		}
+		// カートの商品にまるぴーが含まれるなら
+		elseif($item_category_in === 'marup'){
+
+			$html .= "<script> $(window).on('load', function() { ";
+
+			// 発送先
+			$html .= "$('#delivery_flag2').prop('disabled', true);";
+			$html .= "$('label[for=delivery_flag1]').html('店舗受取');";
+
+			$html .= "$('#delivery_date_select').children('option').remove();	";
+			$html .= "$('#delivery_date_select').append($('<option>').html('".$item_sku_date."').val('".$item_sku_date."'));";
+
+			//$html .= "$('#delivery_date_select').val();";
+			//$html .= "$('#delivery_date_select').parent().html('お選びいただいた商品が指定する日');";
+			$html .= "}); </script>";
+
+		}
+		// カートの商品にクリスマスが含まれるなら
+		elseif($item_category_in === 'xmas' || $item_category_in === 'xmas2'){
+
+			//$html .= '<!-- xmas -->';
+
+			$html .= "<script> $(window).on('load', function() { ";
+
+			// 発送先
+			$html .= "$('#delivery_flag2').prop('disabled', true);";
+			$html .= "$('label[for=delivery_flag1]').html('店舗受取');";
+
+			// 発送希望日
+			$html .= "$('#delivery_date_select').children('option').remove();	";
+
+
+			// 日付の割り当て（商品コードごと）
+			/*
+				3、受取日設定
+				①　　　12月19日〜25日（7日間）
+				②〜⑧　12月14日、25日（2日間）　
+				⑨⑩　　11月14日〜25日
+			*/
+			$deliv_dates = [];
+
+		
+			if(strpos($item_sku_code,'xmas01') !== false){
+				$deliv_dates = [
+					'2020-12-19','2020-12-20','2020-12-21','2020-12-22','2020-12-23','2020-12-24','2020-12-25',
+				];
+			}
+			elseif(strpos($item_sku_code,'xmas09') !== false || strpos($item_sku_code,'xmas10') !== false){
+				$deliv_dates = [
+					'2020-11-14','2020-11-15','2020-11-16','2020-11-17','2020-11-18','2020-11-19','2020-11-20',
+					'2020-11-21','2020-11-22','2020-11-23','2020-11-24','2020-11-25','2020-11-26','2020-11-27',
+					'2020-11-28','2020-11-29','2020-11-30','2020-12-01','2020-12-02','2020-12-03','2020-12-04',
+					'2020-12-05','2020-12-06','2020-12-07','2020-12-08','2020-12-09','2020-12-10','2020-12-11',
+					'2020-12-12','2020-12-13','2020-12-14','2020-12-15','2020-12-16','2020-12-17','2020-12-18',
+					'2020-12-19','2020-12-20','2020-12-21','2020-12-22','2020-12-23','2020-12-24','2020-12-25',
+				];
+			}
+			else{
+				$deliv_dates = [
+					'2020-12-24','2020-12-25',
+				];
+			}
+
+			// 発送希望日
+			$html .= "$('#delivery_date_select').children('option').remove();	";
+
+			foreach($deliv_dates as $ddt){
+				$html .= "$('#delivery_date_select').append($('<option>').html('".$ddt."').val('".$ddt."'));";
+			}
+
+			//$html .= "$('#delivery_date_select').val();";
+			//$html .= "$('#delivery_date_select').parent().html('お選びいただいた商品が指定する日');";
+			$html .= "}); </script>";
+
+		}	
+
+    return $html;
+}
+
+//Welcartの関連商品から抜粋文の削除・在庫数の表示（HTMLの整形）
+add_filter('usces_filter_assistance_item_list', 'my_format_assistance_item_list',10,2);
+function my_format_assistance_item_list($list, $post) {
+
+    $str = '<li>';
+    $str .= '<div class="listbox clearfix">';
+    $str .= '<div class="slit">';
+    $str .= '<a href="'. get_permalink() . '" rel="bookmark" title="' . wp_filter_nohtml_kses(get_the_title()) . '" target="_blank">' . usces_the_itemImage(0, $width, $height, $post, 'return') . '</a>'; //商品画像のHTML
+    $str .= '</div>';
+    $str .= '<div class="detail">';
+    $str .= '<div class="assist_excerpt">';
+    $str .= '<a href="'. get_permalink() . '" rel="bookmark" title="' . wp_filter_nohtml_kses(get_the_title()) . '" target="_blank"><h4>' . usces_the_itemName('return') .'（￥' . usces_the_firstPrice('return') .'）'. '</h4></a>'; //商品名のHTML
+//    $str .= get_the_excerpt(); //説明文の抜粋
+    $str .= '</div>';
+    if (usces_is_skus()) {
+        //$str .= '<div class="assist_price">';
+        //$str .= '￥' . number_format(usces_the_firstPrice('return')); //商品価格のHTML
+        //$str .= '</div>';
+        //$str .= '<div class="assist_zaiko">';
+        //$str .= '在庫状態: [<span class="zaiko">' . usces_the_itemZaikoStatus('return') . '</span>]'; //商品の在庫状態のHTML
+        //$str .= '</div>';
+    }
+    $str .= '</div>'; // .assist_excerptここまで
+    $str .= '</div>'; // .detailここまで
+    $str .= '</li>';
+
+    return $str;
+}
+
+
+function key_unserialize($serial){
+
+	$array = unserialize($serial);
+	$ids = array_keys($array);
+	$skus = array_keys($array[$ids[0]]);
+
+	$row['serial'] = $serial;
+	$row['post_id'] = $ids[0];
+	$row['sku'] = $skus[0];
+	$options = $array[$ids[0]][$skus[0]];
+	$opt_fields = usces_get_opts($row['post_id'], 'sort');
+	$new_opt = array();
+	foreach( $opt_fields as $key => $field ){
+		$name = urlencode($field['name']);
+		$new_opt[$name] = isset($options[$name]) ? $options[$name] : '';
+	}
+	$row['options'] = apply_filters('usces_filter_key_unserialize_options', $new_opt, $ids[0], $skus[0], $serial );
+	$row['price'] = isset($_SESSION['usces_cart'][$serial]['price']) ? $_SESSION['usces_cart'][$serial]['price'] : 0;
+	$row['quantity'] = isset($_SESSION['usces_cart'][$serial]['quant']) ? $_SESSION['usces_cart'][$serial]['quant'] : 0;
+	$row['advance'] = isset($_SESSION['usces_cart'][$serial]['advance']) ? $_SESSION['usces_cart'][$serial]['advance'] : '';
+	
+	return $row;
+}
+
+function wpse_setup_theme() {
+	add_theme_support( 'post-thumbnails' );
+	set_post_thumbnail_size( 600, 600, true ); // default Post Thumbnail dimensions (cropped)
+	add_image_size( 'img600', 600,600, true );
+}
+add_action( 'after_setup_theme', 'wpse_setup_theme' );
+
+// welcartでacf(advanced custom field)を使えるようにするパッチ
+//require( get_theme_file_path( '/wcex_afc_patch.php' ));
+
+// メッセージエラーを表示しない
+
+
+// 管理画面：welcart商品の上部にメッセージを表示する
+function my_admin_notices() {
+	global $pagenow;
+	echo '<!-- '.$pagenow.' -->';
+  if ( 'admin.php' === $pagenow && $_GET['page']==='usces_itemedit' && $_GET['action']==='edit') {
+
+		echo '<div class="updated">
+		<p>
+		<strong style="font-weight:bold">・商品コードの名付けルール</strong> … バースデーケーキ「b●」／ ギフト「g●」／ 期間限定商品「lt●」（●には連番の半角数字）<br>
+		　※季節によって使っている素材が異なるケーキ（いちご使用など）は、冬季「b●」・夏季「b●_a」と分けて商品登録する（季節によって公開/下書きを切り替える）<br>
+		　<span style="color:red">※受取日指定のある期間限定商品（まるごとピーチなど）は、商品コード「[カテゴリ名][受取日]」で指定（例：まるピー7/1受け取り → 「marup0701」）</span>
+		</p>
+		<hr>
+		<p>
+		<strong style="font-weight:bold">・商品画像の作成ルール</strong> … 幅1,000px。一覧用画像（正方形、ファイル名[商品コード].jpg）／ 詳細画面用（[商品コード]__1.jpg,[商品コード]__2.jpg,[商品コード]__3.jpg...）<br>
+		　※例：商品コード「b6_a」の商品に４枚の写真を登録するなら、一覧用画像「b6_a.jpg」／詳細画面用「b6_a__1.jpg,b6_a__2.jpg,b6_a__3.jpg,b6_a__4.jpg」計５枚登録
+		</p>
+		<hr>
+		<p>
+		<strong style="font-weight:bold">・SKU価格の登録ルール</strong> … 税込みの総額表記。通常価(円)には店頭価格(税込)を、売価(円)には割引後の価格(税込)を入力。<br>
+		　※売価の計算方法：店頭価格の10%OFFの売価で消費税が8%なら、【税込売価 ＝ 税抜店頭価格 ✕ 0.9 ✕ 1.08】
+		</p>
+		</div>'.PHP_EOL;
+
+  }
+}
+add_action( 'admin_notices', 'my_admin_notices' );
+
+// ループの並び順など個別にカスタマイズ
+function custom_loop_rules ( $query ) {
+    // 管理画面や、メインクエリ以外の処理に影響を及ぼさないように
+    if ( is_admin() || ! $query->is_main_query() ){
+        return;
+    }
+		// カテゴリーのアーカイブページ
+		if ( $query->is_category('item') ) {
+				//$query->set('posts_per_page', 20); // 1ページあたりの表示件数を20件に変更
+				$query->set('category__not_in' , array( 20,21,22,24,25 )); //まるピー,まるピーのテスト,その他は除く
+		}
+		
+		// XMASケーキの並び順
+		if($query->is_category('xmas') || $query->is_category('xmas2')) {
+			$query->set( 'order', 'ASC' );
+			$query->set( 'orderby', 'ID' );
+		}	
+
+    // 検索結果ページ
+    if ( $query->is_search() ) {
+        //$query->set('cat', -2); // カテゴリーID2に属する記事を除外
+    }
+}
+add_action('pre_get_posts','custom_loop_rules');
+
+// テスト商品も買えるようにする（post_ID指定）
+global $private_items;
+//$private_items = array(1609);
+//複数対応
+//$private_items = array(1609,1566,1574);
+//動作させない
+//$private_items = false;
+
+// wordrepssにログインしていない場合、テスト商品を商品一覧に表示させない
+function delete_private_item_list( $query ) {
+	//管理画面
+	if ( is_admin() ) return;
+	//ログイン済み
+	if( is_user_logged_in() ) return;
+	 
+	//テストアイテムは削除
+	global $private_items;
+	if( !empty( $private_items ) && $query->is_category ) {
+			$query->set( 'post__not_in', $private_items );
+	}
+	 
+}
+add_action( 'pre_get_posts', 'delete_private_item_list' );
+
+add_filter( 'usces_fiter_the_payment_method_checked', 'my_filter_the_payment_method_checked', 10, 3 );
+function my_filter_the_payment_method_checked( $checked, $payments, $value ) {
+    return "checked";
+}
+
+
+// 配送希望日のカスタマイズ
+add_filter( 'usces_delivery_after_days_script', 'my_usces_delivery_after_days_script' );
+function my_usces_delivery_after_days_script( $delivery_after_days_script ){
+return $delivery_after_days_script = "
+
+
+/////////////////////// ①ここの日本語がメッセージになります。 ////////////////////////////////////
+/////////////////////// 例文：8/29～8/31は休業のためお受け取りできません。////.///////////////////
+/////////////////////// 休業日が無いときには、以下のメッセージを入れてください。//////////////////
+/////////////////////// ご希望日を選んでください /////////////////////////////////////////////
+        option += '<option style=\"background-color: #FFF0F5;\" >9/27～9/29は休業のためお受け取りできません。</option>';
+////////////////////////////////////////////////////////////////////////////////////
+
+
+        //option += '<option style=\"background-color: #FFF0F5;\" ></option>';
+        for(var i = 0; i < delivery_after_days; i++) {
+                var newdate = new Date( date[\"year\"]+\"/\"+date[\"month\"]+\"/\"+date[\"day\"] ),
+                        getday = newdate.getDay(),
+                        daystyle = '',
+                        weekday = [\"日\",\"月\",\"火\",\"水\",\"木\",\"金\",\"土\"];
+                date_def = date[\"year\"]+\"-\"+parseInt(date[\"month\"])+\"-\"+parseInt(date[\"day\"]);
+                date_str = date[\"year\"]+\"年\"+parseInt(date[\"month\"])+\"月\"+parseInt(date[\"day\"])+\"日（\"+weekday[getday]+\"）\";
+
+
+
+/////////////////////// ②ここに休業日付を入れます ////////////////////////////////////////
+/////////////////////// 休業日がないときには、xxxxと入力してください。////////////////////
+/////////////////////// 日付を増やしたい時は最終行をコピーして最終行に追加してください。//
+                if ( date_def == '2021-9-27' ){                         daystyle = 'background-color: #585858;';
+                } else if ( date_def == '2021-9-28' ) {                 daystyle = 'background-color: #585858;';
+                } else if ( date_def == '2021-9-29' ) {                 daystyle = 'background-color: #585858;';
+//////////////////////////////////////////////////////////////////////////////////////////
+
+                //if ( date_def == 'xxxx' ){daystyle = 'background-color: #585858;';
+                }
+                if(date_def == selected_delivery_date) {
+                        option += '<option style=\"' + daystyle + '\" value=\"' + date_str + '\" selected>' + date_str + '</option>';
+                } else {
+                        option += '<option style=\"' + daystyle + '\" value=\"' + date_str + '\">' + date_str + '</option>';
+                }
+                date = addDate(date[\"year\"], date[\"month\"], date[\"day\"], 1);
+        }";
+}
+
